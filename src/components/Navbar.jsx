@@ -41,16 +41,12 @@ export default function Navbar({ onAddHotelClick }) {
               letterSpacing: '-0.02em',
               color: 'var(--primary)',
               lineHeight: 1
-            }}>
-              StayFinder
-            </h1>
+            }}>StayEase</h1>
             <span style={{
               fontSize: '0.75rem',
               color: 'var(--text-secondary)',
               fontWeight: 500
-            }}>
-              Search, CRUD & Secure Payments
-            </span>
+            }}> </span>
           </div>
         </div>
 

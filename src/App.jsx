@@ -434,7 +434,7 @@ export default function App() {
       }}>
         <div className="container">
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
-            &copy; {new Date().getFullYear()} StayFinder. Premium Hotel Search Engine API Demo.
+            &copy; {new Date().getFullYear()} StayEase.
           </p>
         </div>
       </footer>

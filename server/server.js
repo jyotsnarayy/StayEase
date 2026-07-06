@@ -142,7 +142,7 @@ async function createRazorpayOrder(request, response, requestId) {
     return 400;
   }
 
-  const hotelName = sanitizeText(body.hotelName, 'StayFinder booking');
+  const hotelName = sanitizeText(body.hotelName, 'StayEase booking');
   const hotelId = sanitizeText(String(body.hotelId || ''), 'hotel_unavailable');
   const receipt = createId('stay');
 
@@ -230,7 +230,7 @@ async function verifyRazorpayPayment(request, response, requestId) {
   const booking = {
     id: bookingId,
     hotelId: payment.hotelId || null,
-    hotelName: payment.hotelName || 'StayFinder booking',
+    hotelName: payment.hotelName || 'StayEase booking',
     amount: payment.amount || null,
     currency: payment.currency || 'INR',
     orderId: razorpay_order_id,
@@ -274,7 +274,7 @@ async function routeRequest(request, response, requestId) {
   if (request.method === 'GET' && request.url === '/api/health') {
     sendSuccess(response, 200, {
       ok: true,
-      service: 'stayfinder-payments',
+      service: 'stayease-payments',
       bookings: bookings.size,
       payments: payments.size
     }, requestId);

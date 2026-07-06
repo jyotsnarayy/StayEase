@@ -82,7 +82,7 @@ export async function openRazorpayCheckout({
     amount: order.amount,
     currency: order.currency,
     order_id: order.id,
-    name: 'StayFinder',
+    name: 'StayEase',
     description: `Booking payment for ${hotelName}`,
     image: '/favicon.svg',
     prefill: {
