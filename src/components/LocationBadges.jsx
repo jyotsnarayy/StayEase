@@ -20,7 +20,6 @@ export default function LocationBadges({ selectedLocation, onLocationSelect }) {
         🏙️ Filter by Location
       </h3>
       
-      {/* Scrollable Badges Wrapper */}
       <div style={{
         display: 'flex',
         gap: '10px',
@@ -29,7 +28,6 @@ export default function LocationBadges({ selectedLocation, onLocationSelect }) {
         scrollbarWidth: 'thin',
         msOverflowStyle: 'none'
       }}>
-        {/* "All Cities" badge */}
         <button
           onClick={() => onLocationSelect('')}
           style={{
@@ -50,7 +48,6 @@ export default function LocationBadges({ selectedLocation, onLocationSelect }) {
           All Locations
         </button>
 
-        {/* City badges */}
         {CITIES.map((city) => {
           const isSelected = selectedLocation.toLowerCase() === city.toLowerCase();
           return (

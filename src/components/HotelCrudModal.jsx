@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, AlertCircle } from 'lucide-react';
+import { X, AlertCircle } from 'lucide-react';
 
 const CITIES = [
   'Ahmedabad', 'Bengaluru', 'Chennai', 'Delhi', 'Goa', 
@@ -48,7 +48,6 @@ export default function HotelCrudModal({ hotel, onClose, onSave }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validations
     if (!formData.name.trim()) return setError('Hotel name is required.');
     if (!formData.price || Number(formData.price) <= 0) return setError('Please enter a valid price greater than 0.');
     
@@ -59,7 +58,6 @@ export default function HotelCrudModal({ hotel, onClose, onSave }) {
 
     if (!formData.description.trim()) return setError('Description is required.');
 
-    // Process photo URLs
     let photoArray = [];
     if (formData.photos.trim()) {
       photoArray = formData.photos
@@ -85,12 +83,10 @@ export default function HotelCrudModal({ hotel, onClose, onSave }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '550px' }}>
         
-        {/* Modal Close */}
         <button className="modal-close-btn" onClick={onClose}>
           <X size={20} />
         </button>
 
-        {/* Modal Header */}
         <div style={{
           padding: '24px 24px 16px 24px',
           borderBottom: '1px solid var(--border-color)'
@@ -103,7 +99,6 @@ export default function HotelCrudModal({ hotel, onClose, onSave }) {
           </p>
         </div>
 
-        {/* Modal Body / Form */}
         <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
           {error && (
             <div style={{
@@ -123,7 +118,6 @@ export default function HotelCrudModal({ hotel, onClose, onSave }) {
             </div>
           )}
 
-          {/* Hotel Name */}
           <div className="form-group">
             <label htmlFor="name">Hotel Name *</label>
             <input
@@ -138,7 +132,6 @@ export default function HotelCrudModal({ hotel, onClose, onSave }) {
             />
           </div>
 
-          {/* Location & Rating row */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
@@ -178,7 +171,6 @@ export default function HotelCrudModal({ hotel, onClose, onSave }) {
             </div>
           </div>
 
-          {/* Price per night */}
           <div className="form-group">
             <label htmlFor="price">Price per Night (INR ₹) *</label>
             <input
@@ -193,7 +185,6 @@ export default function HotelCrudModal({ hotel, onClose, onSave }) {
             />
           </div>
 
-          {/* Description */}
           <div className="form-group">
             <label htmlFor="description">Description *</label>
             <textarea
@@ -208,7 +199,6 @@ export default function HotelCrudModal({ hotel, onClose, onSave }) {
             />
           </div>
 
-          {/* Thumbnail Image URL */}
           <div className="form-group">
             <label htmlFor="thumbnail">Thumbnail Image URL (Optional)</label>
             <input
@@ -222,7 +212,6 @@ export default function HotelCrudModal({ hotel, onClose, onSave }) {
             />
           </div>
 
-          {/* Photo Gallery URLs */}
           <div className="form-group" style={{ marginBottom: '24px' }}>
             <label htmlFor="photos">Gallery Images (Optional, comma-separated URLs)</label>
             <textarea
@@ -236,7 +225,6 @@ export default function HotelCrudModal({ hotel, onClose, onSave }) {
             />
           </div>
 
-          {/* Form Actions */}
           <div style={{
             display: 'flex',
             alignItems: 'center',

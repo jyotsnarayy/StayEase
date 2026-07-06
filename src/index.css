@@ -10,6 +10,7 @@
   --primary: #0f766e;
   --primary-hover: #115e59;
   --primary-light: #ccfbf1;
+  --primary-soft: #f0fdfa;
   --accent: #4f46e5;
   --accent-hover: #4338ca;
   --border-color: #e2e8f0;
@@ -31,7 +32,9 @@
 }
 
 body {
-  background-color: var(--bg-primary);
+  background:
+    radial-gradient(circle at top left, rgba(15, 118, 110, 0.08), transparent 32rem),
+    linear-gradient(180deg, #ffffff 0%, var(--bg-primary) 34rem);
   color: var(--text-primary);
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
@@ -44,7 +47,6 @@ a {
   text-decoration: none;
 }
 
-/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -60,14 +62,12 @@ a {
   background: #94a3b8;
 }
 
-/* Layout Utilities */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
 }
 
-/* Button Styles */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -121,7 +121,6 @@ a {
   aspect-ratio: 1;
 }
 
-/* Badge Styles */
 .badge {
   display: inline-block;
   padding: 4px 10px;
@@ -137,7 +136,29 @@ a {
   color: var(--primary);
 }
 
-/* Cards & Grid */
+.hero-trust-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.hero-trust-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.13);
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+
 .hotels-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -158,6 +179,7 @@ a {
 .card:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-lg);
+  border-color: rgba(15, 118, 110, 0.24);
 }
 
 .card-img-wrapper {
@@ -187,6 +209,22 @@ a {
   border-radius: var(--radius-sm);
   font-weight: 700;
   font-size: 0.95rem;
+}
+
+.card-secure-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background-color: rgba(240, 253, 250, 0.94);
+  color: var(--primary);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  box-shadow: var(--shadow-sm);
 }
 
 .card-content {
@@ -244,7 +282,6 @@ a {
   font-size: 0.95rem;
 }
 
-/* Modals */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -297,7 +334,6 @@ a {
   transform: scale(1.05);
 }
 
-/* Input Styles */
 .form-group {
   margin-bottom: 16px;
 }
@@ -324,7 +360,6 @@ a {
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
 }
 
-/* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -335,7 +370,6 @@ a {
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* Toast System */
 .toast-container {
   position: fixed;
   bottom: 24px;
@@ -365,6 +399,21 @@ a {
 }
 .toast-error {
   border-left: 4px solid var(--danger);
+}
+
+@media (max-width: 640px) {
+  .hero-trust-row {
+    gap: 8px;
+  }
+
+  .hero-trust-row span {
+    font-size: 0.72rem;
+    padding: 6px 9px;
+  }
+
+  .hotels-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @keyframes slideLeft {

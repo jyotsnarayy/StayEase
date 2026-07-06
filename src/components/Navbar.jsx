@@ -17,7 +17,6 @@ export default function Navbar({ onAddHotelClick }) {
         alignItems: 'center',
         justifyContent: 'space-between'
       }}>
-        {/* Brand Logo */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -50,12 +49,11 @@ export default function Navbar({ onAddHotelClick }) {
               color: 'var(--text-secondary)',
               fontWeight: 500
             }}>
-              Hotel Playground API
+              Search, CRUD & Secure Payments
             </span>
           </div>
         </div>
 
-        {/* Action Button */}
         <div>
           <button 
             className="btn btn-primary"

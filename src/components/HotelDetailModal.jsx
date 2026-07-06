@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Star, MapPin, ChevronLeft, ChevronRight, Calendar, Sparkles, ShieldCheck } from 'lucide-react';
+import { X, Star, MapPin, ChevronLeft, ChevronRight, Calendar, Sparkles, ShieldCheck, ReceiptText } from 'lucide-react';
 import { openRazorpayCheckout } from '../services/razorpay';
 
 export default function HotelDetailModal({ hotel, onClose, onMockBook, onBookingError }) {
@@ -7,8 +7,8 @@ export default function HotelDetailModal({ hotel, onClose, onMockBook, onBooking
   const [isBooking, setIsBooking] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const [paymentId, setPaymentId] = useState(null);
+  const [booking, setBooking] = useState(null);
 
-  // Fallback photos list if none provided
   const photos = hotel.photos && hotel.photos.length > 0 
     ? hotel.photos 
     : [hotel.thumbnail || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800'];
@@ -27,12 +27,14 @@ export default function HotelDetailModal({ hotel, onClose, onMockBook, onBooking
     setIsBooking(true);
 
     openRazorpayCheckout({
-      amount: Number(hotel.price), // amount in INR for one night's stay
+      amount: Number(hotel.price),
+      hotelId: hotel.id,
       hotelName: hotel.name,
       onSuccess: (response) => {
         setIsBooking(false);
         setBookingConfirmed(true);
         setPaymentId(response.razorpay_payment_id);
+        setBooking(response.verification?.booking || null);
         onMockBook(hotel.name);
       },
       onFailure: (error) => {
@@ -40,7 +42,6 @@ export default function HotelDetailModal({ hotel, onClose, onMockBook, onBooking
         onBookingError?.(error?.description || error?.message || 'Payment failed. Please try again.');
       },
       onDismiss: () => {
-        // User closed the Razorpay modal without completing payment
         setIsBooking(false);
       }
     });
@@ -54,12 +55,10 @@ export default function HotelDetailModal({ hotel, onClose, onMockBook, onBooking
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '700px' }}>
         
-        {/* Close button */}
         <button className="modal-close-btn" onClick={onClose}>
           <X size={20} />
         </button>
 
-        {/* Dynamic Booking Screen Overlay */}
         {isBooking && (
           <div style={{
             position: 'absolute',
@@ -113,8 +112,26 @@ export default function HotelDetailModal({ hotel, onClose, onMockBook, onBooking
               Stay Confirmed!
             </h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '8px', maxWidth: '340px' }}>
-              Your reservation at <strong>{hotel.name}</strong> was successfully paid for via Razorpay and booked. Pack your bags!
+              Your reservation at <strong>{hotel.name}</strong> was verified by the backend and booked successfully.
             </p>
+            {booking?.id && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                backgroundColor: 'var(--bg-primary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-md)',
+                padding: '10px 14px',
+                margin: '12px 0',
+                color: 'var(--text-secondary)',
+                fontSize: '0.82rem',
+                fontWeight: 700
+              }}>
+                <ReceiptText size={16} color="var(--primary)" />
+                <span>Booking Ref: {booking.id}</span>
+              </div>
+            )}
             {paymentId && (
               <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginBottom: '28px' }}>
                 Payment ID: {paymentId}
@@ -126,7 +143,6 @@ export default function HotelDetailModal({ hotel, onClose, onMockBook, onBooking
           </div>
         )}
 
-        {/* Carousel Gallery */}
         <div style={{
           position: 'relative',
           height: '350px',
@@ -145,7 +161,6 @@ export default function HotelDetailModal({ hotel, onClose, onMockBook, onBooking
             }}
           />
 
-          {/* Navigation Controls */}
           {photos.length > 1 && (
             <>
               <button
@@ -187,7 +202,6 @@ export default function HotelDetailModal({ hotel, onClose, onMockBook, onBooking
                 <ChevronRight size={18} />
               </button>
 
-              {/* Index Indicator */}
               <div style={{
                 position: 'absolute',
                 bottom: '12px',
@@ -207,10 +221,8 @@ export default function HotelDetailModal({ hotel, onClose, onMockBook, onBooking
           )}
         </div>
 
-        {/* Modal Info Area */}
         <div style={{ padding: '24px' }}>
           
-          {/* Header Info */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -240,7 +252,6 @@ export default function HotelDetailModal({ hotel, onClose, onMockBook, onBooking
               </div>
             </div>
             
-            {/* Price section */}
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary)' }}>
                 ₹{formattedPrice}
@@ -251,7 +262,6 @@ export default function HotelDetailModal({ hotel, onClose, onMockBook, onBooking
 
           <hr style={{ border: 0, borderTop: '1px solid var(--border-color)', margin: '16px 0' }} />
 
-          {/* Description */}
           <div style={{ marginBottom: '24px' }}>
             <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '8px', color: 'var(--text-primary)' }}>
               About the Hotel
@@ -265,7 +275,6 @@ export default function HotelDetailModal({ hotel, onClose, onMockBook, onBooking
             </p>
           </div>
 
-          {/* Action Footer */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -283,7 +292,7 @@ export default function HotelDetailModal({ hotel, onClose, onMockBook, onBooking
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
                 <ShieldCheck size={13} />
-                <span>Secure payments powered by Razorpay</span>
+                <span>Backend-created Razorpay orders with signature verification</span>
               </div>
             </div>
             <button className="btn btn-primary" onClick={handleBookNow}>
@@ -295,7 +304,6 @@ export default function HotelDetailModal({ hotel, onClose, onMockBook, onBooking
 
       </div>
 
-      {/* Embedded Spin Animation CSS */}
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }

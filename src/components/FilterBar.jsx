@@ -1,5 +1,5 @@
 import React from 'react';
-import { SlidersHorizontal, ArrowUpDown, RotateCcw } from 'lucide-react';
+import { SlidersHorizontal, RotateCcw } from 'lucide-react';
 
 export default function FilterBar({
   minPrice,
@@ -21,7 +21,6 @@ export default function FilterBar({
       boxShadow: 'var(--shadow-sm)',
       marginBottom: '24px'
     }}>
-      {/* Header */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -35,14 +34,12 @@ export default function FilterBar({
         <span>Filters & Sort</span>
       </div>
 
-      {/* Filter Row */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: '20px',
         alignItems: 'flex-end'
       }}>
-        {/* Price Range */}
         <div>
           <label style={{
             display: 'block',
@@ -92,7 +89,6 @@ export default function FilterBar({
           </div>
         </div>
 
-        {/* Min Rating */}
         <div>
           <label style={{
             display: 'block',
@@ -127,7 +123,6 @@ export default function FilterBar({
           </select>
         </div>
 
-        {/* Sort By */}
         <div>
           <label style={{
             display: 'block',
@@ -164,7 +159,6 @@ export default function FilterBar({
           </div>
         </div>
 
-        {/* Reset Action */}
         <div style={{
           display: 'flex',
           justifyContent: 'flex-end'

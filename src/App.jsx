@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import LocationBadges from './components/LocationBadges';
@@ -8,12 +8,11 @@ import HotelDetailModal from './components/HotelDetailModal';
 import HotelCrudModal from './components/HotelCrudModal';
 import Toast from './components/Toast';
 import { api } from './services/api';
-import { Loader2, Plus, RefreshCw, AlertCircle } from 'lucide-react';
+import { Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 12;
 
 export default function App() {
-  // --- Search & Filters State ---
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
@@ -22,16 +21,13 @@ export default function App() {
   const [minRating, setMinRating] = useState('');
   const [orderBy, setOrderBy] = useState('');
 
-  // --- Pagination State ---
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
-  // --- Core Hotels Data State ---
   const [apiHotels, setApiHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // --- Local Fallback CRUD State ---
   const [createdHotels, setCreatedHotels] = useState(() => {
     const saved = localStorage.getItem('stayfinder_created_hotels');
     return saved ? JSON.parse(saved) : [];
@@ -45,13 +41,11 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
 
-  // --- Modals & Toasts State ---
   const [activeHotel, setActiveHotel] = useState(null);
   const [isCrudModalOpen, setIsCrudModalOpen] = useState(false);
-  const [editingHotel, setEditingHotel] = useState(null); // null means create new, otherwise holds hotel object
+  const [editingHotel, setEditingHotel] = useState(null);
   const [toasts, setToasts] = useState([]);
 
-  // --- Save local fallback state to localStorage ---
   useEffect(() => {
     localStorage.setItem('stayfinder_created_hotels', JSON.stringify(createdHotels));
   }, [createdHotels]);
@@ -64,32 +58,28 @@ export default function App() {
     localStorage.setItem('stayfinder_deleted_hotel_ids', JSON.stringify(deletedHotelIds));
   }, [deletedHotelIds]);
 
-  // --- Debounce Search Query ---
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setCurrentPage(1); // reset to first page on search
+      const timer = setTimeout(() => {
+        setDebouncedSearch(searchQuery);
+      setCurrentPage(1);
     }, 450);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedLocation, minPrice, maxPrice, minRating, orderBy]);
 
-  // --- Toast Manager Helpers ---
-  const showToast = (message, type = 'success') => {
+  const showToast = useCallback((message, type = 'success') => {
     const id = Date.now();
     setToasts((prev) => [...prev, { id, message, type }]);
-  };
+  }, []);
 
   const handleDismissToast = (id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // --- Fetch API Hotels ---
-  const loadHotels = async () => {
+  const loadHotels = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -107,30 +97,25 @@ export default function App() {
 
       if (response && response.data) {
         setApiHotels(response.data);
-        // Note: Use returned/count from API or size of list.
         setTotalCount(response.count || response.returned || 0);
       } else {
         throw new Error('Invalid response structure received from hotel API');
       }
-    } catch (err) {
-      setError(err.message || 'Failed to fetch hotels from server.');
-      showToast(err.message || 'API connection failed. Operating in local mode.', 'error');
+    } catch (error) {
+      setError(error.message || 'Failed to fetch hotels from server.');
+      showToast(error.message || 'API connection failed. Operating in local mode.', 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, debouncedSearch, selectedLocation, minPrice, maxPrice, minRating, orderBy, showToast]);
 
   useEffect(() => {
     loadHotels();
-  }, [currentPage, debouncedSearch, selectedLocation, minPrice, maxPrice, minRating, orderBy]);
+  }, [loadHotels]);
 
-  // --- Unified Hotels List (API + Local CRUD Merging) ---
-  // We merge API results with locally created, updated, and deleted ones.
   const getProcessedHotels = () => {
-    // 1. Start with the API fetched hotels
     let list = [...apiHotels];
 
-    // 2. Apply updates and filter out deleted items for API hotels
     list = list
       .filter((h) => !deletedHotelIds.includes(h.id))
       .map((h) => {
@@ -140,24 +125,19 @@ export default function App() {
         return h;
       });
 
-    // 3. Inject locally created hotels that match current search/filter conditions
     const matchingCreated = createdHotels.filter((h) => {
-      // Filter by location
       if (selectedLocation && h.location.toLowerCase() !== selectedLocation.toLowerCase()) {
         return false;
       }
-      // Filter by search query
       if (debouncedSearch) {
         const query = debouncedSearch.toLowerCase();
         const matchesName = h.name.toLowerCase().includes(query);
         const matchesLoc = h.location.toLowerCase().includes(query);
         if (!matchesName && !matchesLoc) return false;
       }
-      // Filter by rating
       if (minRating && Number(h.rating) < Number(minRating)) {
         return false;
       }
-      // Filter by price range
       if (minPrice && Number(h.price) < Number(minPrice)) {
         return false;
       }
@@ -167,10 +147,8 @@ export default function App() {
       return true;
     });
 
-    // Merge created hotels. Prepend them so they are immediately visible.
     let combined = [...matchingCreated, ...list];
 
-    // Apply client-side sorting to created hotels + API list so everything remains sorted correctly
     if (orderBy === 'price') {
       combined.sort((a, b) => Number(a.price) - Number(b.price));
     } else if (orderBy === '-price') {
@@ -186,24 +164,19 @@ export default function App() {
 
   const processedHotels = getProcessedHotels();
 
-  // --- CRUD Functions ---
 
   const handleCreateHotel = async (hotelData) => {
     try {
-      // 1. Try server-side create
       showToast('Creating hotel on server...', 'info');
       const response = await api.createHotel(hotelData);
       
-      // If server succeeds, it returns the created hotel.
-      // We will save it in createdHotels locally too to ensure persistence in local storage fallback
       const serverHotel = response.data || { ...hotelData, id: response.id || Date.now() };
       setCreatedHotels((prev) => [serverHotel, ...prev]);
       showToast(`Successfully created ${hotelData.name}!`);
-    } catch (err) {
-      // 2. Local Fallback in case of server failure/restrictions
+    } catch {
       const localNewHotel = {
         ...hotelData,
-        id: -Date.now() // Negative ID indicates locally-only created item
+        id: -Date.now()
       };
       setCreatedHotels((prev) => [localNewHotel, ...prev]);
       showToast(`Saved ${hotelData.name} locally (API write locked).`);
@@ -214,27 +187,22 @@ export default function App() {
   const handleUpdateHotel = async (id, hotelData) => {
     try {
       showToast('Updating hotel details...', 'info');
-      // 1. Try server-side update (only if it is a server-created hotel)
       if (id > 0) {
         await api.updateHotel(id, hotelData);
       }
       
-      // 2. Update local state representation
       if (id < 0) {
-        // Edit locally created hotel
         setCreatedHotels((prev) =>
           prev.map((h) => (h.id === id ? { ...h, ...hotelData } : h))
         );
       } else {
-        // Store edit mapping for server hotel
         setUpdatedHotels((prev) => ({
           ...prev,
           [id]: { id, ...hotelData }
         }));
       }
       showToast(`Updated details for ${hotelData.name}!`);
-    } catch (err) {
-      // If server write is blocked, still keep updates locally
+    } catch {
       if (id > 0) {
         setUpdatedHotels((prev) => ({
           ...prev,
@@ -251,20 +219,17 @@ export default function App() {
 
     try {
       showToast('Deleting hotel listing...', 'info');
-      // 1. Try server-side delete if it is a server hotel
       if (id > 0) {
         await api.deleteHotel(id);
       }
 
-      // 2. Update local state
       if (id < 0) {
         setCreatedHotels((prev) => prev.filter((h) => h.id !== id));
       } else {
         setDeletedHotelIds((prev) => [...prev, id]);
       }
       showToast('Hotel listing deleted successfully.');
-    } catch (err) {
-      // Fallback
+    } catch {
       if (id > 0) {
         setDeletedHotelIds((prev) => [...prev, id]);
       }
@@ -295,25 +260,20 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
-      {/* Navbar */}
       <Navbar onAddHotelClick={() => {
         setEditingHotel(null);
         setIsCrudModalOpen(true);
       }} />
 
-      {/* Hero Banner & Search */}
       <Hero searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
-      {/* Main Content Area */}
       <main className="container" style={{ flexGrow: 1, padding: '40px 20px' }}>
         
-        {/* City Badges */}
         <LocationBadges
           selectedLocation={selectedLocation}
           onLocationSelect={setSelectedLocation}
         />
 
-        {/* Filters */}
         <FilterBar
           minPrice={minPrice}
           maxPrice={maxPrice}
@@ -326,7 +286,6 @@ export default function App() {
           onResetFilters={handleResetFilters}
         />
 
-        {/* Section Title / Header */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -354,7 +313,6 @@ export default function App() {
           </button>
         </div>
 
-        {/* Hotels Grid */}
         {loading ? (
           <div style={{
             display: 'flex',
@@ -427,7 +385,6 @@ export default function App() {
               ))}
             </div>
 
-            {/* Pagination Controls */}
             {totalPages > 1 && (
               <div style={{
                 display: 'flex',
@@ -468,7 +425,6 @@ export default function App() {
 
       </main>
 
-      {/* Footer */}
       <footer style={{
         backgroundColor: 'var(--bg-secondary)',
         borderTop: '1px solid var(--border-color)',
@@ -483,7 +439,6 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Modal: View Details */}
       {activeHotel && (
         <HotelDetailModal
           hotel={activeHotel}
@@ -497,7 +452,6 @@ export default function App() {
         />
       )}
 
-      {/* Modal: Add/Edit CRUD */}
       {isCrudModalOpen && (
         <HotelCrudModal
           hotel={editingHotel}
@@ -509,10 +463,8 @@ export default function App() {
         />
       )}
 
-      {/* Toast Notifications */}
       <Toast toasts={toasts} onDismiss={handleDismissToast} />
 
-      {/* Spinner animation rules */}
       <style>{`
         .spin {
           animation: spin 1s linear infinite;

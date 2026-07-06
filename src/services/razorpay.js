@@ -1,23 +1,3 @@
-/**
- * Razorpay Payment Gateway Integration
- * ------------------------------------
- * This client-only demo opens Razorpay Checkout directly from the browser.
- * For production, create orders and verify signatures on a backend.
- *
- * Test Mode:
- * - Set VITE_RAZORPAY_KEY_ID in .env to use your Razorpay test key.
- * - Use Razorpay's test cards (e.g. 4111 1111 1111 1111, any future expiry,
- *   any CVV) or test UPI id `success@razorpay` to simulate a successful payment.
- */
-
-const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
-
-/**
- * Ensures the Razorpay Checkout script is available.
- * It's normally already loaded via a <script> tag in index.html, but this
- * acts as a safety net (e.g. if that tag is ever removed, or is blocked and
- * needs a retry).
- */
 export function loadRazorpayScript() {
   return new Promise((resolve) => {
     if (window.Razorpay) {
@@ -38,30 +18,49 @@ export function loadRazorpayScript() {
   });
 }
 
-/**
- * Opens the Razorpay Checkout modal for a hotel booking payment.
- *
- * @param {Object} params
- * @param {number} params.amount - Amount in INR (rupees, not paise).
- * @param {string} params.hotelName - Hotel name, shown in the checkout description.
- * @param {Object} [params.customer] - Optional prefill info { name, email, contact }.
- * @param {(response: {razorpay_payment_id: string}) => void} params.onSuccess - Called on successful payment.
- * @param {(error: any) => void} [params.onFailure] - Called if the payment attempt fails.
- * @param {() => void} [params.onDismiss] - Called if the user closes the checkout modal without paying.
- */
+async function handleApiResponse(response) {
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error?.message || data.message || `Request failed with status ${response.status}`);
+  }
+
+  return data.data ?? data;
+}
+
+async function createPaymentOrder({ amount, hotelId, hotelName }) {
+  const response = await fetch('/api/razorpay/order', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ amount, hotelId, hotelName })
+  });
+
+  return handleApiResponse(response);
+}
+
+async function verifyPaymentSignature(paymentResponse) {
+  const response = await fetch('/api/razorpay/verify', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(paymentResponse)
+  });
+
+  return handleApiResponse(response);
+}
+
 export async function openRazorpayCheckout({
   amount,
+  hotelId,
   hotelName,
   customer = {},
   onSuccess,
   onFailure,
   onDismiss
 }) {
-  if (!RAZORPAY_KEY_ID) {
-    onFailure?.(new Error('Razorpay key is missing. Add VITE_RAZORPAY_KEY_ID to your .env file.'));
-    return;
-  }
-
   const scriptLoaded = await loadRazorpayScript();
 
   if (!scriptLoaded || !window.Razorpay) {
@@ -69,10 +68,20 @@ export async function openRazorpayCheckout({
     return;
   }
 
+  let order;
+
+  try {
+    order = await createPaymentOrder({ amount, hotelId, hotelName });
+  } catch (error) {
+    onFailure?.(error);
+    return;
+  }
+
   const options = {
-    key: RAZORPAY_KEY_ID,
-    amount: Math.round(Number(amount) * 100),
-    currency: 'INR',
+    key: order.keyId,
+    amount: order.amount,
+    currency: order.currency,
+    order_id: order.id,
     name: 'StayFinder',
     description: `Booking payment for ${hotelName}`,
     image: '/favicon.svg',
@@ -85,10 +94,15 @@ export async function openRazorpayCheckout({
       hotel_name: hotelName
     },
     theme: {
-      color: '#0f766e' // matches --primary from src/index.css
+      color: '#0f766e'
     },
-    handler: function (response) {
-      onSuccess?.(response);
+    handler: async function (response) {
+      try {
+        const verification = await verifyPaymentSignature(response);
+        onSuccess?.({ ...response, verification });
+      } catch (error) {
+        onFailure?.(error);
+      }
     },
     modal: {
       ondismiss: function () {

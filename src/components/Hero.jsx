@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search } from 'lucide-react';
+import { Search, ShieldCheck, SlidersHorizontal, CreditCard } from 'lucide-react';
 
 const HERO_IMAGES = [
   "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1600",
@@ -28,7 +28,6 @@ export default function Hero({ searchQuery, onSearchChange }) {
       color: 'white',
       textAlign: 'center'
     }}>
-      {/* Background Image Carousel */}
       {HERO_IMAGES.map((src, index) => (
         <div
           key={src}
@@ -48,7 +47,6 @@ export default function Hero({ searchQuery, onSearchChange }) {
         />
       ))}
 
-      {/* Dim Overlay */}
       <div style={{
         position: 'absolute',
         top: 0,
@@ -59,7 +57,6 @@ export default function Hero({ searchQuery, onSearchChange }) {
         zIndex: 2
       }} />
 
-      {/* Hero Content */}
       <div className="container" style={{
         position: 'relative',
         zIndex: 3,
@@ -77,7 +74,7 @@ export default function Hero({ searchQuery, onSearchChange }) {
         </h2>
         <p style={{
           fontSize: '1.05rem',
-          marginBottom: '28px',
+          marginBottom: '18px',
           opacity: 0.95,
           fontWeight: 500,
           textShadow: '0 1px 2px rgba(0,0,0,0.3)'
@@ -85,7 +82,12 @@ export default function Hero({ searchQuery, onSearchChange }) {
           Search and book hotels across India's top cities with a single click.
         </p>
 
-        {/* Search Bar Overlay */}
+        <div className="hero-trust-row">
+          <span><ShieldCheck size={15} /> Verified checkout</span>
+          <span><SlidersHorizontal size={15} /> Live filters</span>
+          <span><CreditCard size={15} /> Razorpay test mode</span>
+        </div>
+
         <div style={{
           position: 'relative',
           backgroundColor: 'var(--bg-secondary)',
