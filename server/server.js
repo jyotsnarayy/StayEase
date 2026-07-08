@@ -298,16 +298,15 @@ async function routeRequest(request, response, requestId) {
 }
 
 const server = http.createServer(async (request, response) => {
-  const requestId = request.headers['x-request-id'] || createId('req');
+  const requestId = createId('req');
   const startedAt = Date.now();
   let statusCode = 500;
 
   try {
     statusCode = await routeRequest(request, response, requestId);
   } catch (error) {
-    const message = error.message || 'Server error.';
-    statusCode = message.includes('Missing RAZORPAY') ? 503 : 500;
-    sendError(response, statusCode, message, requestId);
+    console.error(`Error processing request ${requestId}:`, error);
+    sendError(response, 500, 'Internal server error.', requestId);
   } finally {
     logRequest(request, statusCode, requestId, startedAt);
   }
